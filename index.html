@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="治療紀錄">
+<title>語言治療紀錄工具</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #f2f2f7;
+  color: #1c1c1e;
+  font-size: 16px;
+  min-height: 100vh;
+}
+header {
+  background: #fff;
+  border-bottom: 1px solid #e5e5ea;
+  padding: 14px 16px 10px;
+  position: sticky; top: 0; z-index: 20;
+}
+header h1 { font-size: 17px; font-weight: 700; }
+header p { font-size: 12px; color: #8e8e93; margin-top: 2px; }
+
+/* Book tabs - horizontal scroll */
+.book-tabs {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 12px 16px;
+  background: #fff;
+  border-bottom: 1px solid #e5e5ea;
+  position: sticky; top: 56px; z-index: 10;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.book-tabs::-webkit-scrollbar { display: none; }
+.tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1.5px solid transparent;
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  min-width: 64px;
+}
+.tab:active { transform: scale(0.95); }
+.tab.active { border-color: currentColor; background: rgba(0,0,0,0.04); }
+.tab-icon {
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  color: #fff;
+}
+.tab-name {
+  font-size: 10px;
+  text-align: center;
+  line-height: 1.3;
+  color: #3a3a3c;
+  max-width: 60px;
+}
+.tab.active .tab-name { font-weight: 600; }
+
+/* Sections */
+.section {
+  background: #fff;
+  margin: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid #e5e5ea;
+  overflow: hidden;
+}
+.sec-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: #8e8e93;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 10px 14px 4px;
+}
+
+/* Vocab chips */
+.chips-wrap {
+  padding: 6px 10px 12px;
+  display: flex; flex-wrap: wrap; gap: 7px;
+}
+.chip {
+  padding: 7px 13px;
+  border-radius: 20px;
+  font-size: 14px;
+  cursor: pointer;
+  border: 1px solid #e5e5ea;
+  background: #f2f2f7;
+  color: #3a3a3c;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.1s;
+}
+.chip:active { transform: scale(0.93); }
+.chip.concrete { background: #d4f4d8; border-color: #34c759; color: #1a6b29; }
+.chip.abstract { background: #fff0d0; border-color: #ff9500; color: #7a4500; }
+.legend {
+  display: flex; gap: 14px;
+  padding: 4px 14px 2px;
+  font-size: 11px; color: #8e8e93;
+}
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 3px; }
+.dot.g { background: #34c759; }
+.dot.o { background: #ff9500; }
+
+/* Option buttons */
+.opt-group { padding: 6px 10px 12px; display: flex; flex-wrap: wrap; gap: 8px; }
+.opt-btn {
+  padding: 9px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  cursor: pointer;
+  border: 1px solid #e5e5ea;
+  background: #f2f2f7;
+  color: #3a3a3c;
+  line-height: 1.3;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.1s;
+}
+.opt-btn:active { transform: scale(0.95); }
+.opt-btn.on { background: #007aff; border-color: #007aff; color: #fff; font-weight: 600; }
+
+/* Note output */
+.note-wrap { padding: 10px 14px 14px; }
+.note-text {
+  background: #f9f9fb;
+  border: 1px solid #e5e5ea;
+  border-radius: 10px;
+  padding: 13px;
+  font-size: 13px;
+  line-height: 1.9;
+  color: #1c1c1e;
+  white-space: pre-wrap;
+  min-height: 120px;
+}
+.copy-btn {
+  display: block; width: 100%;
+  margin-top: 10px; padding: 15px;
+  background: #007aff; color: #fff;
+  border: none; border-radius: 12px;
+  font-size: 16px; font-weight: 700;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.15s;
+}
+.copy-btn:active { opacity: 0.8; }
+.copy-btn.done { background: #34c759; }
+.bottom { height: 40px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>語言治療紀錄工具</h1>
+  <p>選擇繪本 → 調整詞彙與設定 → 複製紀錄</p>
+</header>
+
+<div class="book-tabs" id="book-tabs"></div>
+
+<div class="section">
+  <div class="sec-title">詞彙理解分類</div>
+  <div class="legend">
+    <span><span class="dot g"></span>具體（理解度高）</span>
+    <span><span class="dot o"></span>情緒／抽象（需多次示範）</span>
+  </div>
+  <div class="chips-wrap" id="chips"></div>
+</div>
+
+<div class="section" id="sentence-section">
+  <div class="sec-title">句型難度</div>
+  <div class="opt-group" id="sentence-opts"></div>
+</div>
+
+<div class="section">
+  <div class="sec-title">仿說方式</div>
+  <div class="opt-group">
+    <div class="opt-btn" id="o-imm" onclick="setOpt('imitation','immediate')">立即仿說</div>
+    <div class="opt-btn on" id="o-del" onclick="setOpt('imitation','delayed')">延宕仿說</div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="sec-title">敘事提示量</div>
+  <div class="opt-group">
+    <div class="opt-btn" id="o-few" onclick="setOpt('scaffold','few')">少量提示</div>
+    <div class="opt-btn on" id="o-many" onclick="setOpt('scaffold','many')">較多提示</div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="sec-title">治療紀錄</div>
+  <div class="note-wrap">
+    <div class="note-text" id="note"></div>
+    <button class="copy-btn" id="copy-btn" onclick="copyNote()">複製紀錄</button>
+  </div>
+</div>
+
+<div class="bottom"></div>
+
+<script>
+const books = [
+  {
+    id: 'aini',
+    name: '早安！阿尼 早安！阿布',
+    emoji: '🦊', color: '#007aff',
+    vocab: ['草莓','籃子','救生圈','沙灘','海浪','梯子','荷葉','楓葉'],
+    defaultAbstract: [],
+    sentences: [{ id:'s1', label:'問候句', pattern:'早安！＿＿！', desc:'問候句型' }],
+    whOk:'who、what、where', whHard:'why、how',
+    chars:'阿尼與朋友', topic:'詞彙量與聽覺理解能力'
+  },
+  {
+    id: 'gurumba',
+    name: '古倫巴幼兒園',
+    emoji: '🐘', color: '#ff9500',
+    vocab: ['大象','鞋子','溜滑梯','盤子','游泳池','餅乾','茶杯','鋼琴','幼兒園','小朋友','傷心','開心'],
+    defaultAbstract: ['傷心','開心'],
+    sentences: [
+      { id:'s1', label:'簡單版', pattern:'大象做了巨大的＿＿＿', desc:'簡單句型' },
+      { id:'s2', label:'進階版', pattern:'大象把巨大的＿＿＿當作＿＿＿讓小朋友玩／吃', desc:'進階句型' }
+    ],
+    whOk:'who、what、where', whHard:'why、how',
+    chars:'古倫巴（大象）與小朋友', topic:'詞彙量、聽覺理解及因果推理能力'
+  },
+  {
+    id: 'supermarket',
+    name: '小雞逛超市',
+    emoji: '🛒', color: '#ffcc00',
+    vocab: ['超市','購物車','麵包','番茄','青菜','巧克力','甜甜圈','冰棒','餅乾','布丁','沮喪'],
+    defaultAbstract: ['沮喪'],
+    sentences: [
+      { id:'s1', label:'簡單版', pattern:'小雞想買＿＿', desc:'簡單句型' },
+      { id:'s2', label:'進階版', pattern:'媽媽買了＿＿，小雞想買＿＿', desc:'進階句型' }
+    ],
+    whOk:'who、what、where', whHard:'why、how',
+    chars:'小雞們和雞媽媽', topic:'詞彙量與聽覺理解能力'
+  },
+  {
+    id: 'playground',
+    name: '小雞逛遊樂園',
+    emoji: '🎡', color: '#34c759',
+    vocab: ['遊樂園','迷宮','咖啡杯','天女散花','旋轉椅','熱氣球','划船','三明治','開心','滿足'],
+    defaultAbstract: ['開心','滿足'],
+    sentences: [
+      { id:'s1', label:'簡單版', pattern:'小雞玩了＿＿', desc:'簡單句型' },
+      { id:'s2', label:'進階版', pattern:'小雞在遊樂園玩了＿＿，玩得很＿＿', desc:'進階句型' }
+    ],
+    whOk:'who、what、where', whHard:'why、how',
+    chars:'小雞們和雞媽媽', topic:'詞彙量與聽覺理解能力'
+  },
+  {
+    id: 'christmas',
+    name: '小雞過耶誕節',
+    emoji: '🎄', color: '#ff3b30',
+    vocab: ['耶誕節','市集','聖誕樹','禮物','聖誕老公公','雪橇','餅乾','蠟燭','期待','驚喜'],
+    defaultAbstract: ['期待','驚喜'],
+    sentences: [
+      { id:'s1', label:'簡單版', pattern:'小雞收到了＿＿', desc:'簡單句型' },
+      { id:'s2', label:'進階版', pattern:'耶誕節到了，小雞去了＿＿，還收到了＿＿', desc:'進階句型' }
+    ],
+    whOk:'who、what、where', whHard:'why、how',
+    chars:'小雞們', topic:'詞彙量與聽覺理解能力'
+  },
+  {
+    id: 'birthday',
+    name: '小雞過生日',
+    emoji: '🎂', color: '#ff2d55',
+    vocab: ['生日','蛋糕','蘋果派','草莓','布丁','蠟燭','禮物','開心','期待'],
+    defaultAbstract: ['開心','期待'],
+    sentences: [
+      { id:'s1', label:'簡單版', pattern:'小雞吃了＿＿', desc:'簡單句型' },
+      { id:'s2', label:'進階版', pattern:'今天是生日，小雞吃了＿＿，還收到了＿＿', desc:'進階句型' }
+    ],
+    whOk:'who、what、where', whHard:'why、how',
+    chars:'小雞們', topic:'詞彙量與聽覺理解能力'
+  },
+  {
+    id: 'dearzoo',
+    name: '親愛的動物園',
+    emoji: '🦁', color: '#5856d6',
+    vocab: ['大象','長頸鹿','獅子','駱駝','蛇','猴子','青蛙','小狗','太大了','太高了','太兇了','太嚇人了','太調皮了','剛剛好'],
+    defaultAbstract: ['太大了','太高了','太兇了','太嚇人了','太調皮了','剛剛好'],
+    sentences: [
+      { id:'s1', label:'簡單版', pattern:'動物園送來了一隻＿＿', desc:'簡單句型' },
+      { id:'s2', label:'進階版', pattern:'動物園送來了一隻＿＿，牠太＿＿了，所以送回去了', desc:'進階句型' }
+    ],
+    whOk:'who、what、where', whHard:'why、how',
+    chars:'小孩與動物', topic:'詞彙量、聽覺理解及形容詞理解能力'
+  },
+  {
+    id: 'hole',
+    name: '那是一個洞嗎？',
+    emoji: '🕳️', color: '#636366',
+    vocab: ['啄木鳥','窩','魔術帽','甜甜圈','熊','蟲子','水果','老鼠','乳酪','鼴鼠','地道','困惑'],
+    defaultAbstract: ['困惑'],
+    sentences: [{ id:'s1', label:'問答句', pattern:'那是一個洞嗎？那是＿＿的＿＿！', desc:'問答句型' }],
+    whOk:'who、what', whHard:'why、how',
+    chars:'各種小動物', topic:'詞彙量與聽覺理解能力'
+  },
+  {
+    id: 'spot',
+    name: '小波在哪裡？',
+    emoji: '🐕', color: '#af52de',
+    vocab: ['籃子','地毯','鱷魚','門','上','下','裡面'],
+    defaultAbstract: [],
+    sentences: [
+      { id:'s1', label:'簡單版', pattern:'＿＿＿沒看到小波', desc:'簡單句型' },
+      { id:'s2', label:'進階版', pattern:'＿＿＿在＿＿＿的＿＿面（鱷魚在床鋪下面）', desc:'位置句型' }
+    ],
+    whOk:'who、what、where', whHard:'why',
+    chars:'小波和媽媽', topic:'詞彙量、位置概念及聽覺理解能力'
+  }
+];
+
+let state = { bookId: 'aini', vocab: {}, imitation: 'delayed', scaffold: 'many', sentence: 's1' };
+
+function getBook(id) { return books.find(b => b.id === id); }
+
+function initBook(id) {
+  const b = getBook(id);
+  state.bookId = id;
+  state.vocab = {};
+  b.vocab.forEach(w => { state.vocab[w] = b.defaultAbstract.includes(w) ? 'abstract' : 'concrete'; });
+  state.sentence = b.sentences[0].id;
+}
+
+function renderTabs() {
+  const c = document.getElementById('book-tabs');
+  c.innerHTML = '';
+  books.forEach(b => {
+    const t = document.createElement('div');
+    t.className = 'tab' + (state.bookId === b.id ? ' active' : '');
+    t.style.color = b.color;
+    t.innerHTML = `<div class="tab-icon" style="background:${b.color}">${b.emoji}</div><div class="tab-name">${b.name}</div>`;
+    t.onclick = () => { initBook(b.id); render(); };
+    c.appendChild(t);
+  });
+}
+
+function renderChips() {
+  const b = getBook(state.bookId);
+  const c = document.getElementById('chips');
+  c.innerHTML = '';
+  b.vocab.forEach(w => {
+    const t = state.vocab[w];
+    const el = document.createElement('div');
+    el.className = 'chip ' + t;
+    el.textContent = w;
+    el.onclick = () => {
+      state.vocab[w] = state.vocab[w] === 'concrete' ? 'abstract' : 'concrete';
+      renderChips(); generateNote();
+    };
+    c.appendChild(el);
+  });
+}
+
+function renderSentenceOpts() {
+  const b = getBook(state.bookId);
+  const c = document.getElementById('sentence-opts');
+  c.innerHTML = '';
+  b.sentences.forEach(s => {
+    const btn = document.createElement('div');
+    btn.className = 'opt-btn' + (state.sentence === s.id ? ' on' : '');
+    btn.textContent = s.label + '：' + s.pattern;
+    btn.onclick = () => { state.sentence = s.id; renderSentenceOpts(); generateNote(); };
+    c.appendChild(btn);
+  });
+  document.getElementById('sentence-section').style.display = b.sentences.length > 1 ? '' : 'none';
+}
+
+function setOpt(key, val) {
+  state[key] = val;
+  if (key === 'imitation') {
+    document.getElementById('o-imm').className = 'opt-btn' + (val === 'immediate' ? ' on' : '');
+    document.getElementById('o-del').className = 'opt-btn' + (val === 'delayed' ? ' on' : '');
+  } else {
+    document.getElementById('o-few').className = 'opt-btn' + (val === 'few' ? ' on' : '');
+    document.getElementById('o-many').className = 'opt-btn' + (val === 'many' ? ' on' : '');
+  }
+  generateNote();
+}
+
+function generateNote() {
+  const b = getBook(state.bookId);
+  const conc = Object.entries(state.vocab).filter(([,t]) => t === 'concrete').map(([w]) => w);
+  const abst = Object.entries(state.vocab).filter(([,t]) => t === 'abstract').map(([w]) => w);
+  const sent = b.sentences.find(s => s.id === state.sentence) || b.sentences[0];
+
+  let p1 = `與個案共讀繪本「${b.name}」，提升個案${b.topic}。`;
+  if (conc.length && abst.length) {
+    p1 += `個案在治療師示範與說明後，對具體詞彙「${conc.join('、')}」理解度高，能正確指認；對情緒／抽象詞彙「${abst.join('、')}」則需治療師多次示範與情境說明後，方能理解。`;
+  } else if (conc.length) {
+    p1 += `個案在治療師示範與說明後，可理解「${conc.join('、')}」，整體詞彙理解表現良好。`;
+  } else {
+    p1 += `個案對本次目標詞彙「${abst.join('、')}」均需治療師多次示範與情境說明後方能理解。`;
+  }
+  p1 += `個案在治療師說明繪本故事段落後，可以理解繪本段落大意、回答繪本相關的Wh問題，包含${b.whOk}的問題，對於${b.whHard}有時需要提問引導，個案對於此類型問題較無法直接理解。`;
+
+  const p2 = state.imitation === 'delayed'
+    ? `在共讀期間，個案在治療師示範後，可以延宕仿說方式說出「${sent.pattern}」的${sent.desc}，個案需等待治療師示範語句後，經短暫停頓再依照句型套用至繪本不同情境上。`
+    : `在共讀期間，個案在治療師示範後，可立即仿說說出「${sent.pattern}」的${sent.desc}，並依照句型套用至繪本不同情境上。`;
+
+  const p3 = state.scaffold === 'many'
+    ? `在共讀完畢後，個案在治療師給予鷹架並口語提示「說說看，這裡面發生什麼事情了？」後，需在治療師提供較多口語提示下，方能簡單說出當頁${b.chars}發生的事情，自發性敘事能力仍需持續練習。`
+    : `在共讀完畢後，個案在治療師給予鷹架並口語提示「說說看，這裡面發生什麼事情了？」後，可在少量提示下說出當頁${b.chars}發生的事情，敘事表現良好。`;
+
+  document.getElementById('note').textContent = `進行語言治療：\n1. ${p1}\n2. ${p2}\n3. ${p3}`;
+}
+
+function render() {
+  renderTabs();
+  renderChips();
+  renderSentenceOpts();
+  generateNote();
+}
+
+function copyNote() {
+  const text = document.getElementById('note').textContent;
+  const btn = document.getElementById('copy-btn');
+  const finish = () => {
+    btn.textContent = '✓ 已複製！';
+    btn.classList.add('done');
+    setTimeout(() => { btn.textContent = '複製紀錄'; btn.classList.remove('done'); }, 2000);
+  };
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(finish).catch(() => fallback(text, finish));
+  } else { fallback(text, finish); }
+}
+function fallback(text, cb) {
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select();
+  document.execCommand('copy'); document.body.removeChild(ta); cb();
+}
+
+initBook('aini');
+render();
+</script>
+</body>
+</html>
