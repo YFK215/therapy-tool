@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="語言治療工作台">
+<title>語言治療工作台</title>
+<style>
+/* ===== GLOBAL ===== */
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Microsoft JhengHei','PingFang TC','Segoe UI',sans-serif;
+  background:#f2f2f7;color:#1c1c1e;min-height:100vh;font-size:16px;
+}
+.back-btn{
+  display:inline-flex;align-items:center;gap:2px;
+  background:none;border:none;color:#007aff;
+  font-size:16px;font-weight:500;cursor:pointer;
+  padding:4px 0;font-family:inherit;flex-shrink:0;
+  -webkit-tap-highlight-color:transparent;
+}
+.back-btn:active{opacity:.6}
+.toast{
+  position:fixed;bottom:24px;right:24px;
+  background:#276749;color:#fff;
+  padding:12px 20px;border-radius:10px;
+  font-size:14px;font-weight:600;
+  opacity:0;transform:translateY(10px);
+  transition:all .3s;pointer-events:none;z-index:999;
+}
+.toast.show{opacity:1;transform:translateY(0)}
+
+/* ===== HOME PAGE ===== */
+#pg-home{
+  min-height:100vh;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:32px 20px;
+}
+.home-logo{font-size:40px;margin-bottom:14px}
+.home-title{font-size:22px;font-weight:700;color:#1c1c1e;margin-bottom:6px;text-align:center}
+.home-sub{font-size:14px;color:#8e8e93;margin-bottom:40px;text-align:center}
+.home-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;width:100%;max-width:440px}
+@media(max-width:360px){.home-cards{grid-template-columns:1fr}}
+.home-card{
+  background:#fff;border-radius:20px;
+  padding:28px 16px 24px;
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  cursor:pointer;border:none;font-family:inherit;
+  box-shadow:0 2px 14px rgba(0,0,0,.08);
+  transition:transform .15s,box-shadow .15s;
+  -webkit-tap-highlight-color:transparent;
+  text-decoration:none;
+}
+.home-card:active{transform:scale(.96);box-shadow:0 1px 6px rgba(0,0,0,.07)}
+.home-card-icon{
+  width:66px;height:66px;border-radius:18px;
+  display:flex;align-items:center;justify-content:center;font-size:34px;
+}
+.home-card-name{font-size:16px;font-weight:700;color:#1c1c1e;text-align:center}
+.home-card-desc{font-size:12px;color:#8e8e93;text-align:center;line-height:1.6}
+
+/* ===== RECORD TOOL ===== */
+#pg-record header{
+  background:#fff;border-bottom:1px solid #e5e5ea;
+  padding:12px 16px 10px;
+  position:sticky;top:0;z-index:20;
+}
+#pg-record header h1{font-size:17px;font-weight:700}
+#pg-record header p{font-size:12px;color:#8e8e93;margin-top:2px}
+.book-tabs{
+  display:flex;gap:10px;overflow-x:auto;
+  padding:12px 16px;background:#fff;
+  border-bottom:1px solid #e5e5ea;
+  position:sticky;top:57px;z-index:10;
+  -webkit-overflow-scrolling:touch;scrollbar-width:none;
+}
+.book-tabs::-webkit-scrollbar{display:none}
+.tab{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  cursor:pointer;flex-shrink:0;padding:6px 10px;
+  border-radius:10px;border:1.5px solid transparent;
+  transition:all .15s;-webkit-tap-highlight-color:transparent;min-width:64px;
+}
+.tab:active{transform:scale(.95)}
+.tab.active{border-color:currentColor;background:rgba(0,0,0,.04)}
+.tab-icon{
+  width:38px;height:38px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;color:#fff;
+}
+.tab-name{font-size:10px;text-align:center;line-height:1.3;color:#3a3a3c;max-width:60px}
+.tab.active .tab-name{font-weight:600}
+.section{
+  background:#fff;margin:10px 14px;
+  border-radius:12px;border:1px solid #e5e5ea;overflow:hidden;
+}
+.sec-title{
+  font-size:11px;font-weight:600;color:#8e8e93;
+  text-transform:uppercase;letter-spacing:.4px;padding:10px 14px 4px;
+}
+.chips-wrap{padding:6px 10px 12px;display:flex;flex-wrap:wrap;gap:7px}
+.chip{
+  padding:7px 13px;border-radius:20px;font-size:14px;cursor:pointer;
+  border:1px solid #e5e5ea;background:#f2f2f7;color:#3a3a3c;
+  user-select:none;-webkit-tap-highlight-color:transparent;transition:transform .1s;
+}
+.chip:active{transform:scale(.93)}
+.chip.concrete{background:#d4f4d8;border-color:#34c759;color:#1a6b29}
+.chip.abstract{background:#fff0d0;border-color:#ff9500;color:#7a4500}
+.legend{display:flex;gap:14px;padding:4px 14px 2px;font-size:11px;color:#8e8e93}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:3px}
+.dot.g{background:#34c759}.dot.o{background:#ff9500}
+.opt-group{padding:6px 10px 12px;display:flex;flex-wrap:wrap;gap:8px}
+.opt-btn{
+  padding:9px 14px;border-radius:10px;font-size:13px;cursor:pointer;
+  border:1px solid #e5e5ea;background:#f2f2f7;color:#3a3a3c;
+  line-height:1.3;-webkit-tap-highlight-color:transparent;transition:transform .1s;
+  font-family:inherit;
+}
+.opt-btn:active{transform:scale(.95)}
+.opt-btn.on{background:#007aff;border-color:#007aff;color:#fff;font-weight:600}
+.note-wrap{padding:10px 14px 14px}
+.note-text{
+  background:#f9f9fb;border:1px solid #e5e5ea;border-radius:10px;
+  padding:13px;font-size:13px;line-height:1.9;color:#1c1c1e;
+  white-space:pre-wrap;min-height:120px;
+}
+.copy-btn{
+  display:block;width:100%;margin-top:10px;padding:15px;
+  background:#007aff;color:#fff;border:none;border-radius:12px;
+  font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;
+  -webkit-tap-highlight-color:transparent;transition:opacity .15s;
+}
+.copy-btn:active{opacity:.8}
+.copy-btn.done{background:#34c759}
+.bottom{height:40px}
+
+/* ===== NORM TOOL ===== */
+#pg-norm{background:#f0f4f8;min-height:100vh}
+.norm-nav{
+  background:#fff;padding:12px 16px;
+  display:flex;align-items:center;gap:10px;
+  border-bottom:1px solid #e2e8f0;
+  position:sticky;top:0;z-index:20;
+}
+.norm-nav h1{font-size:17px;font-weight:700;color:#2b6cb0}
+.norm-wrap{max-width:940px;margin:0 auto;padding:20px}
+.norm-head-inner{text-align:center;margin-bottom:22px}
+.norm-head-inner p{font-size:13px;color:#718096}
+.norm-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:20px}
+@media(max-width:620px){.norm-grid{grid-template-columns:1fr}}
+.ncard{background:#fff;border-radius:14px;padding:22px;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+.ncard-hdr{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+.ncard-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.n-ic{background:#ebf8ff}.n-ie{background:#f0fff4}
+.ncard-name{font-size:17px;font-weight:700;color:#1a202c}
+.ncard-sub{font-size:12px;color:#718096}
+label.nlbl{display:block;font-size:11px;font-weight:700;color:#a0aec0;text-transform:uppercase;letter-spacing:.6px;margin-bottom:7px}
+.n-age-row{display:flex;gap:6px;margin-bottom:14px}
+.n-age-btn{
+  flex:1;padding:8px 2px;border:2px solid #e2e8f0;border-radius:8px;
+  background:#fff;cursor:pointer;font-size:14px;font-family:inherit;
+  transition:all .15s;color:#4a5568;
+}
+.n-age-btn:hover{border-color:#2b6cb0;color:#2b6cb0}
+.n-age-btn.active{border-color:#2b6cb0;background:#ebf8ff;color:#2b6cb0;font-weight:700}
+.n-input{
+  width:100%;padding:12px;border:2px solid #e2e8f0;border-radius:10px;
+  font-size:22px;font-weight:700;text-align:center;font-family:inherit;
+  color:#1a202c;transition:border .15s;margin-bottom:14px;
+}
+.n-input:focus{outline:none;border-color:#2b6cb0}
+.n-result{background:#f7fafc;border-radius:10px;overflow:hidden}
+.n-rrow{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid #edf2f7}
+.n-rrow:last-child{border-bottom:none}
+.n-rl{font-size:13px;color:#718096}
+.n-rv{font-size:21px;font-weight:700}
+.n-blue{color:#2b6cb0}.n-purple{color:#6b46c1}.n-green{color:#276749}
+.n-ibar{padding:10px 14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#fff;border-top:1px solid #edf2f7}
+.n-badge{padding:3px 10px;border-radius:999px;font-size:12px;font-weight:700}
+.n-bd{background:#fff5f5;color:#c53030}
+.n-bw{background:#fffaf0;color:#c05621}
+.n-bn{background:#f0fff4;color:#276749}
+.n-bg{background:#ebf8ff;color:#2b6cb0}
+.n-itext{font-size:12px;color:#4a5568}
+.n-empty{color:#a0aec0;font-size:13px;text-align:center;padding:20px;font-style:italic}
+.n-report{background:#fff;border-radius:14px;padding:24px;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+.n-rhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px}
+.n-rhead h2{font-size:17px;font-weight:700;color:#276749}
+.n-brow{display:flex;gap:8px;flex-wrap:wrap}
+.nbtn{padding:9px 18px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:700;font-family:inherit;transition:all .15s}
+.nb-gen{background:#2b6cb0;color:#fff}.nb-gen:hover{background:#2c5282}
+.nb-copy{background:#276749;color:#fff}.nb-copy:hover{background:#22543d}
+.nb-clr{background:#fff;color:#718096;border:2px solid #e2e8f0}
+.n-rsec{margin-bottom:16px}
+.n-rsec h3{font-size:11px;font-weight:700;color:#a0aec0;text-transform:uppercase;letter-spacing:.6px;margin-bottom:7px}
+.n-textarea{
+  width:100%;padding:12px;border:2px solid #e2e8f0;border-radius:10px;
+  font-family:'Microsoft JhengHei','PingFang TC',sans-serif;
+  font-size:14px;line-height:1.9;resize:vertical;color:#1a202c;
+}
+.n-textarea:focus{outline:none;border-color:#276749}
+.n-alert{
+  background:#fffaf0;border-left:4px solid #f6ad55;
+  padding:10px 14px;border-radius:0 8px 8px 0;
+  font-size:12px;color:#744210;margin-top:14px;line-height:1.7;
+}
+</style>
+</head>
+<body>
+
+<!-- ========================================================
+     HOME PAGE
+     ======================================================== -->
+<div id="pg-home">
+  <div class="home-logo">🏥</div>
+  <div class="home-title">語言治療工作台</div>
+  <div class="home-sub">選擇今天要使用的工具</div>
+  <div class="home-cards">
+    <button class="home-card" onclick="showPage('record')">
+      <div class="home-card-icon" style="background:#e8f4fd">📚</div>
+      <div class="home-card-name">治療紀錄</div>
+      <div class="home-card-desc">繪本 ／ 教具<br>治療紀錄生成</div>
+    </button>
+    <button class="home-card" onclick="showPage('norm')">
+      <div class="home-card-icon" style="background:#e8f5ee">📊</div>
+      <div class="home-card-name">常模評估</div>
+      <div class="home-card-desc">語言理解 ＆ 口語表達<br>查詢 ＆ 報告生成</div>
+    </button>
+  </div>
+</div>
+
+
+<!-- ========================================================
+     RECORD TOOL
+     ======================================================== -->
+<div id="pg-record" style="display:none">
+
+<header>
+  <div style="display:flex;align-items:center;gap:10px">
+    <button class="back-btn" onclick="showPage('home')">‹ 首頁</button>
+    <div>
+      <h1>語言治療紀錄工具</h1>
+      <p>選擇繪本 → 調整詞彙與設定 → 複製紀錄</p>
+    </div>
+  </div>
+</header>
+
+<div class="book-tabs" id="book-tabs"></div>
+
+<div class="section">
+  <div class="sec-title">詞彙理解分類</div>
+  <div class="legend">
+    <span><span class="dot g"></span>具體（理解度高）</span>
+    <span><span class="dot o"></span>情緒／抽象（需多次示範）</span>
+  </div>
+  <div class="chips-wrap" id="chips"></div>
+</div>
+
+<div class="section" id="sentence-section">
+  <div class="sec-title">句型難度</div>
+  <div class="opt-group" id="sentence-opts"></div>
+</div>
+
+<div class="section">
+  <div class="sec-title">仿說方式</div>
+  <div class="opt-group">
+    <div class="opt-btn" id="o-imm" onclick="setOpt('imitation','immediate')">立即仿說</div>
+    <div class="opt-btn on" id="o-del" onclick="setOpt('imitation','delayed')">延宕仿說</div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="sec-title">敘事提示量</div>
+  <div class="opt-group">
+    <div class="opt-btn" id="o-few" onclick="setOpt('scaffold','few')">少量提示</div>
+    <div class="opt-btn on" id="o-many" onclick="setOpt('scaffold','many')">較多提示</div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="sec-title">治療紀錄</div>
+  <div class="note-wrap">
+    <div class="note-text" id="note"></div>
+    <button class="copy-btn" id="copy-btn" onclick="copyNote()">複製紀錄</button>
+  </div>
+</div>
+<div class="bottom"></div>
+
+</div><!-- /pg-record -->
+
+
+<!-- ========================================================
+     NORM TOOL
+     ======================================================== -->
+<div id="pg-norm" style="display:none">
+
+<div class="norm-nav">
+  <button class="back-btn" onclick="showPage('home')">‹ 首頁</button>
+  <h1>修訂學前語障 — 常模查詢</h1>
+</div>
+
+<div class="norm-wrap">
+  <div class="norm-head-inner">
+    <p>輸入原始分數自動對照常模 ‧ 一鍵生成評估報告段落</p>
+  </div>
+
+  <div class="norm-grid">
+    <!-- 語言理解 -->
+    <div class="ncard">
+      <div class="ncard-hdr">
+        <div class="ncard-icon n-ic">👂</div>
+        <div>
+          <div class="ncard-name">語言理解</div>
+          <div class="ncard-sub">原始分數範圍 0–37</div>
+        </div>
+      </div>
+      <label class="nlbl">年齡組</label>
+      <div class="n-age-row" id="nag-c">
+        <button class="n-age-btn" onclick="nSelAge('c',3)">3歲組</button>
+        <button class="n-age-btn active" onclick="nSelAge('c',4)">4歲組</button>
+        <button class="n-age-btn" onclick="nSelAge('c',5)">5歲組</button>
+      </div>
+      <label class="nlbl">原始分數</label>
+      <input class="n-input" type="number" id="nraw-c" min="0" max="37" placeholder="—" oninput="nLookup('c')">
+      <div id="nres-c"><div class="n-empty">請輸入原始分數</div></div>
+    </div>
+
+    <!-- 口語表達 -->
+    <div class="ncard">
+      <div class="ncard-hdr">
+        <div class="ncard-icon n-ie">🗣️</div>
+        <div>
+          <div class="ncard-name">口語表達</div>
+          <div class="ncard-sub">原始分數範圍 0–46</div>
+        </div>
+      </div>
+      <label class="nlbl">年齡組</label>
+      <div class="n-age-row" id="nag-e">
+        <button class="n-age-btn" onclick="nSelAge('e',3)">3歲組</button>
+        <button class="n-age-btn active" onclick="nSelAge('e',4)">4歲組</button>
+        <button class="n-age-btn" onclick="nSelAge('e',5)">5歲組</button>
+      </div>
+      <label class="nlbl">原始分數</label>
+      <input class="n-input" type="number" id="nraw-e" min="0" max="46" placeholder="—" oninput="nLookup('e')">
+      <div id="nres-e"><div class="n-empty">請輸入原始分數</div></div>
+    </div>
+  </div>
+
+  <div class="n-report">
+    <div class="n-rhead">
+      <h2>📝 評估報告生成</h2>
+      <div class="n-brow">
+        <button class="nbtn nb-gen" onclick="nGenAll()">自動生成報告文字</button>
+        <button class="nbtn nb-copy" onclick="nCopyAll()">複製全部</button>
+        <button class="nbtn nb-clr" onclick="nClearAll()">清除</button>
+      </div>
+    </div>
+    <div class="n-rsec">
+      <h3>語言理解 — 報告段落</h3>
+      <textarea class="n-textarea" id="nrep-c" rows="5" placeholder="按「自動生成」後，此處會出現語言理解的評估段落，可自行修改補充觀察。"></textarea>
+    </div>
+    <div class="n-rsec">
+      <h3>口語表達 — 報告段落</h3>
+      <textarea class="n-textarea" id="nrep-e" rows="5" placeholder="按「自動生成」後，此處會出現口語表達的評估段落，可自行修改補充觀察。"></textarea>
+    </div>
+    <div class="n-alert">
+      📌 T分數同時顯示 <strong>直線轉換T</strong>（紫色）與 <strong>常態化轉換T</strong>（綠色）；報告文字使用直線轉換T。<br>
+      語言理解：3歲 raw 3–35 ／ 4歲 raw 7–37 ／ 5歲 raw 13–37　｜　口語表達：3歲 raw 1–45 ／ 4歲 raw 7–46 ／ 5歲 raw 21–46
+    </div>
+  </div>
+</div><!-- /norm-wrap -->
+
+</div><!-- /pg-norm -->
+
+<div class="toast" id="toast"></div>
+
+
+<script>
+// ============================================================
+// NAVIGATION
+// ============================================================
+function showPage(id) {
+  ['home','record','norm'].forEach(p => {
+    document.getElementById('pg-'+p).style.display = (p === id) ? '' : 'none';
+  });
+  window.scrollTo(0, 0);
+}
+
+// ============================================================
+// RECORD TOOL DATA
+// ============================================================
+const books = [
+  {
+    id:'aini', name:'早安！阿尼 早安！阿布',
+    emoji:'🦊', color:'#007aff',
+    vocab:['草莓','籃子','救生圈','沙灘','海浪','梯子','荷葉','楓葉'],
+    defaultAbstract:[],
+    sentences:[{id:'s1',label:'問候句',pattern:'早安！＿＿！',desc:'問候句型'}],
+    whOk:'who、what、where', whHard:'why、how',
+    chars:'阿尼與朋友', topic:'詞彙量與聽覺理解能力'
+  },
+  {
+    id:'gurumba', name:'古倫巴幼兒園',
+    emoji:'🐘', color:'#ff9500',
+    vocab:['大象','鞋子','溜滑梯','盤子','游泳池','餅乾','茶杯','鋼琴','幼兒園','小朋友','傷心','開心'],
+    defaultAbstract:['傷心','開心'],
+    sentences:[
+      {id:'s1',label:'簡單版',pattern:'大象做了巨大的＿＿＿',desc:'簡單句型'},
+      {id:'s2',label:'進階版',pattern:'大象把巨大的＿＿＿當作＿＿＿讓小朋友玩／吃',desc:'進階句型'}
+    ],
+    whOk:'who、what、where', whHard:'why、how',
+    chars:'古倫巴（大象）與小朋友', topic:'詞彙量、聽覺理解及因果推理能力'
+  },
+  {
+    id:'supermarket', name:'小雞逛超市',
+    emoji:'🛒', color:'#ffcc00',
+    vocab:['超市','購物車','麵包','番茄','青菜','巧克力','甜甜圈','冰棒','餅乾','布丁','沮喪'],
+    defaultAbstract:['沮喪'],
+    sentences:[
+      {id:'s1',label:'簡單版',pattern:'小雞想買＿＿',desc:'簡單句型'},
+      {id:'s2',label:'進階版',pattern:'媽媽買了＿＿，小雞想買＿＿',desc:'進階句型'}
+    ],
+    whOk:'who、what、where', whHard:'why、how',
+    chars:'小雞們和雞媽媽', topic:'詞彙量與聽覺理解能力'
+  },
+  {
+    id:'playground', name:'小雞逛遊樂園',
+    emoji:'🎡', color:'#34c759',
+    vocab:['遊樂園','迷宮','咖啡杯','天女散花','旋轉椅','熱氣球','划船','三明治','開心','滿足'],
+    defaultAbstract:['開心','滿足'],
+    sentences:[
+      {id:'s1',label:'簡單版',pattern:'小雞玩了＿＿',desc:'簡單句型'},
+      {id:'s2',label:'進階版',pattern:'小雞在遊樂園玩了＿＿，玩得很＿＿',desc:'進階句型'}
+    ],
+    whOk:'who、what、where', whHard:'why、how',
+    chars:'小雞們和雞媽媽', topic:'詞彙量與聽覺理解能力'
+  },
+  {
+    id:'christmas', name:'小雞過耶誕節',
+    emoji:'🎄', color:'#ff3b30',
+    vocab:['耶誕節','市集','聖誕樹','禮物','聖誕老公公','雪橇','餅乾','蠟燭','期待','驚喜'],
+    defaultAbstract:['期待','驚喜'],
+    sentences:[
+      {id:'s1',label:'簡單版',pattern:'小雞收到了＿＿',desc:'簡單句型'},
+      {id:'s2',label:'進階版',pattern:'耶誕節到了，小雞去了＿＿，還收到了＿＿',desc:'進階句型'}
+    ],
+    whOk:'who、what、where', whHard:'why、how',
+    chars:'小雞們', topic:'詞彙量與聽覺理解能力'
+  },
+  {
+    id:'birthday', name:'小雞過生日',
+    emoji:'🎂', color:'#ff2d55',
+    vocab:['生日','蛋糕','蘋果派','草莓','布丁','蠟燭','禮物','開心','期待'],
+    defaultAbstract:['開心','期待'],
+    sentences:[
+      {id:'s1',label:'簡單版',pattern:'小雞吃了＿＿',desc:'簡單句型'},
+      {id:'s2',label:'進階版',pattern:'今天是生日，小雞吃了＿＿，還收到了＿＿',desc:'進階句型'}
+    ],
+    whOk:'who、what、where', whHard:'why、how',
+    chars:'小雞們', topic:'詞彙量與聽覺理解能力'
+  },
+  {
+    id:'dearzoo', name:'親愛的動物園',
+    emoji:'🦁', color:'#5856d6',
+    vocab:['大象','長頸鹿','獅子','駱駝','蛇','猴子','青蛙','小狗','太大了','太高了','太兇了','太嚇人了','太調皮了','剛剛好'],
+    defaultAbstract:['太大了','太高了','太兇了','太嚇人了','太調皮了','剛剛好'],
+    sentences:[
+      {id:'s1',label:'簡單版',pattern:'動物園送來了一隻＿＿',desc:'簡單句型'},
+      {id:'s2',label:'進階版',pattern:'動物園送來了一隻＿＿，牠太＿＿了，所以送回去了',desc:'進階句型'}
+    ],
+    whOk:'who、what、where', whHard:'why、how',
+    chars:'小孩與動物', topic:'詞彙量、聽覺理解及形容詞理解能力'
+  },
+  {
+    id:'hole', name:'那是一個洞嗎？',
+    emoji:'🕳️', color:'#636366',
+    vocab:['啄木鳥','窩','魔術帽','甜甜圈','熊','蟲子','水果','老鼠','乳酪','鼴鼠','地道','困惑'],
+    defaultAbstract:['困惑'],
+    sentences:[{id:'s1',label:'問答句',pattern:'那是一個洞嗎？那是＿＿的＿＿！',desc:'問答句型'}],
+    whOk:'who、what', whHard:'why、how',
+    chars:'各種小動物', topic:'詞彙量與聽覺理解能力'
+  },
+  {
+    id:'spot', name:'小波在哪裡？',
+    emoji:'🐕', color:'#af52de',
+    vocab:['籃子','地毯','鱷魚','門','上','下','裡面'],
+    defaultAbstract:[],
+    sentences:[
+      {id:'s1',label:'簡單版',pattern:'＿＿＿沒看到小波',desc:'簡單句型'},
+      {id:'s2',label:'進階版',pattern:'＿＿＿在＿＿＿的＿＿面（鱷魚在床鋪下面）',desc:'位置句型'}
+    ],
+    whOk:'who、what、where', whHard:'why',
+    chars:'小波和媽媽', topic:'詞彙量、位置概念及聽覺理解能力'
+  },
+  {
+    id:'ladybug', name:'10隻小瓢蟲',
+    emoji:'🐞', color:'#ff3b30',
+    vocab:['瓢蟲','蝴蝶','小雞','小鳥','蚱蜢','蜜蜂','金魚','烏龜','小鴨','青蛙','葉子','花'],
+    defaultAbstract:[],
+    sentences:[
+      {id:'s1',label:'簡單版',pattern:'小瓢蟲找＿＿＿玩',desc:'動作句型'},
+      {id:'s2',label:'進階版',pattern:'＿＿＿隻小瓢蟲找＿＿＿玩',desc:'數量+動作句型'},
+      {id:'s3',label:'最進階版',pattern:'＿＿隻小瓢蟲找＿＿＿玩，一隻留下來陪他，剩下＿＿＿隻小瓢蟲',desc:'數量遞減句型'}
+    ],
+    whOk:'who、what、how many', whHard:'why',
+    chars:'小瓢蟲與各種動物', topic:'數概念、詞彙量及聽覺理解能力'
+  },
+  {
+    id:'bus', name:'誰的家到了？',
+    emoji:'🚌', color:'#34c759',
+    vocab:['公車站牌','公車','蛇','兔子','熊','橋','船','草地','森林','山坡','雨傘'],
+    defaultAbstract:['等待'],
+    sentences:[
+      {id:'s1',label:'簡單版1',pattern:'＿＿＿在公車站牌等公車',desc:'等待句型'},
+      {id:'s2',label:'簡單版2',pattern:'公車來了，＿＿＿上車',desc:'搭車句型'},
+      {id:'s3',label:'進階版',pattern:'下雨了，＿＿＿把傘打開遮雨',desc:'因應天氣句型'},
+      {id:'s4',label:'最進階版',pattern:'公車到了＿＿＿，＿＿＿的家到了',desc:'場景推論句型'}
+    ],
+    whOk:'who、what、where', whHard:'誰的家到了？你怎麼看出來＿＿的家快到了？（從場景推論）',
+    chars:'蛇、兔子與熊', topic:'詞彙量、場景推論及聽覺理解能力'
+  },
+  {
+    id:'mushroom', name:'蘑菇釘', type:'tool',
+    emoji:'🍄', color:'#ff6b35',
+    vocab:['紅色','黃色','藍色','綠色','一個','兩個','三個','四個','蘑菇釘'],
+    defaultAbstract:[],
+    sentences:[
+      {id:'s1',label:'階段一',pattern:'要',desc:'單詞表達'},
+      {id:'s2',label:'階段二',pattern:'我要',desc:'兩詞組合'},
+      {id:'s3',label:'階段三',pattern:'我要蘑菇',desc:'三詞組合'},
+      {id:'s4',label:'階段四',pattern:'我要＿＿色蘑菇',desc:'顏色＋名詞句型'},
+      {id:'s5',label:'階段五',pattern:'我要＿＿個蘑菇',desc:'數量＋名詞句型'},
+      {id:'s6',label:'階段六',pattern:'我要＿＿個＿＿色蘑菇',desc:'數量＋顏色＋名詞句型'}
+    ],
+    whOk:'顏色辨識、數量點數', whHard:'顏色與數量同時整合',
+    chars:'蘑菇釘教具', topic:'顏色概念、數量概念及口語表達能力'
+  },
+  {
+    id:'puzzle', name:'拼圖書', type:'tool',
+    emoji:'🧩', color:'#5856d6',
+    vocab:['大','小','長方形','正方形','拼圖','人物','事件'],
+    defaultAbstract:[],
+    sentences:[
+      {id:'s1',label:'階段一',pattern:'要',desc:'單詞表達'},
+      {id:'s2',label:'階段二',pattern:'我要',desc:'兩詞組合'},
+      {id:'s3',label:'階段三',pattern:'我要拼圖',desc:'三詞組合'},
+      {id:'s4',label:'階段四',pattern:'我要大／小拼圖',desc:'大小＋名詞句型'},
+      {id:'s5',label:'階段五',pattern:'（完成後）描述圖片中的人物與發生的事件',desc:'敘事句型'}
+    ],
+    whOk:'大小辨識、形狀辨識', whHard:'完成後描述拼圖情境',
+    chars:'拼圖書教具', topic:'大小概念、形狀辨識及口語敘事能力'
+  },
+  {
+    id:'snake-game', name:'蛇棋', type:'tool',
+    emoji:'🎲', color:'#30b0c7',
+    vocab:['骰子','棋子','蛇','梯子','起點','終點','輪流','規則'],
+    defaultAbstract:['輪流','規則'],
+    sentences:[
+      {id:'s1',label:'階段一',pattern:'輪到我了',desc:'主動表達輪次'},
+      {id:'s2',label:'階段二',pattern:'我擲了＿＿，走＿＿步',desc:'行動描述句型'},
+      {id:'s3',label:'階段三',pattern:'走到蛇退到＿＿；走到梯子跳到＿＿',desc:'規則說明句型'},
+      {id:'s4',label:'階段四',pattern:'完整說明遊戲規則',desc:'完整規則敘述'}
+    ],
+    whOk:'教具部件辨識、遊戲規則理解', whHard:'完整口語說明遊戲規則',
+    chars:'蛇棋遊戲', topic:'遊戲規則理解及口語表達能力'
+  },
+  {
+    id:'hotpot', name:'暖暖的火鍋湯',
+    emoji:'🍲', color:'#ff9500',
+    vocab:['熊熊','兔子','羊','鴨子','貓','火鍋','雪','豆腐','魚丸','紅蘿蔔','玉米','圍巾'],
+    defaultAbstract:['暖暖的','冷颼颼','開心','期待'],
+    sentences:[
+      {id:'s1',label:'簡單版',pattern:'小熊把＿＿＿給＿＿＿',desc:'給予句型'},
+      {id:'s2',label:'進階版',pattern:'＿＿＿把＿＿＿送給小熊當作謝禮',desc:'回禮句型'},
+      {id:'s3',label:'最進階版',pattern:'因為＿＿＿很冷，小熊把＿＿＿送給他保暖，＿＿＿就回送小熊＿＿＿',desc:'因果句型'}
+    ],
+    whOk:'who、what', whHard:'why（為什麼小熊會有玉米？鴨奶奶的帽子怎麼來的？）',
+    chars:'小熊與朋友們', topic:'詞彙量、因果理解及聽覺理解能力'
+  }
+];
+
+let state = { bookId:'aini', vocab:{}, imitation:'delayed', scaffold:'many', sentence:'s1' };
+function getBook(id){ return books.find(b=>b.id===id); }
+function initBook(id){
+  const b=getBook(id); state.bookId=id; state.vocab={};
+  b.vocab.forEach(w=>{ state.vocab[w]=b.defaultAbstract.includes(w)?'abstract':'concrete'; });
+  state.sentence=b.sentences[0].id;
+}
+function renderTabs(){
+  const c=document.getElementById('book-tabs'); c.innerHTML='';
+  books.forEach(b=>{
+    const t=document.createElement('div');
+    t.className='tab'+(state.bookId===b.id?' active':'');
+    t.style.color=b.color;
+    t.innerHTML=`<div class="tab-icon" style="background:${b.color}">${b.emoji}</div><div class="tab-name">${b.name}</div>`;
+    t.onclick=()=>{ initBook(b.id); render(); };
+    c.appendChild(t);
+  });
+}
+function renderChips(){
+  const b=getBook(state.bookId); const c=document.getElementById('chips'); c.innerHTML='';
+  b.vocab.forEach(w=>{
+    const el=document.createElement('div');
+    el.className='chip '+state.vocab[w]; el.textContent=w;
+    el.onclick=()=>{ state.vocab[w]=state.vocab[w]==='concrete'?'abstract':'concrete'; renderChips(); generateNote(); };
+    c.appendChild(el);
+  });
+}
+function renderSentenceOpts(){
+  const b=getBook(state.bookId); const c=document.getElementById('sentence-opts'); c.innerHTML='';
+  b.sentences.forEach(s=>{
+    const btn=document.createElement('div');
+    btn.className='opt-btn'+(state.sentence===s.id?' on':'');
+    btn.textContent=s.label+'：'+s.pattern;
+    btn.onclick=()=>{ state.sentence=s.id; renderSentenceOpts(); generateNote(); };
+    c.appendChild(btn);
+  });
+  document.getElementById('sentence-section').style.display=b.sentences.length>1?'':'none';
+}
+function setOpt(key,val){
+  state[key]=val;
+  if(key==='imitation'){
+    document.getElementById('o-imm').className='opt-btn'+(val==='immediate'?' on':'');
+    document.getElementById('o-del').className='opt-btn'+(val==='delayed'?' on':'');
+  } else {
+    document.getElementById('o-few').className='opt-btn'+(val==='few'?' on':'');
+    document.getElementById('o-many').className='opt-btn'+(val==='many'?' on':'');
+  }
+  generateNote();
+}
+function generateNote(){
+  const b=getBook(state.bookId);
+  const conc=Object.entries(state.vocab).filter(([,t])=>t==='concrete').map(([w])=>w);
+  const abst=Object.entries(state.vocab).filter(([,t])=>t==='abstract').map(([w])=>w);
+  const sent=b.sentences.find(s=>s.id===state.sentence)||b.sentences[0];
+  if(b.type==='tool'){
+    let p1=`使用操作性教具「${b.name}」進行語言治療，目標為提升個案${b.topic}。`;
+    if(conc.length&&abst.length){ p1+=`個案在治療師示範與說明後，可正確理解並操作「${conc.join('、')}」等概念；對於「${abst.join('、')}」等抽象概念則需治療師多次示範與引導後，方能理解。`; }
+    else if(conc.length){ p1+=`個案在治療師示範後，可正確理解並操作「${conc.join('、')}」等概念，整體理解表現良好。`; }
+    else if(abst.length){ p1+=`個案對「${abst.join('、')}」等概念均需治療師多次示範與引導後，方能理解。`; }
+    p1+=`個案可理解${b.whOk}，對於${b.whHard}則較需提示協助。`;
+    const p2=state.imitation==='delayed'
+      ?`在口語表達方面，個案在治療師示範後，可以延宕仿說方式說出「${sent.pattern}」（${sent.desc}），需等待治療師示範後，經短暫停頓再跟著表達，並能套用於實際操作情境中。`
+      :`在口語表達方面，個案在治療師示範後，可立即仿說說出「${sent.pattern}」（${sent.desc}），並能套用於實際操作情境中。`;
+    const p3=state.scaffold==='many'
+      ?`整體而言，個案在治療師給予較多口語提示與示範引導下，可完成「${b.name}」教具操作並進行目標句型表達，自發性表達能力仍需持續練習。`
+      :`整體而言，個案在少量提示下即可完成「${b.name}」教具操作並進行目標句型表達，整體表現良好。`;
+    document.getElementById('note').textContent=`進行語言治療：\n1. ${p1}\n2. ${p2}\n3. ${p3}`; return;
+  }
+  let p1=`與個案共讀繪本「${b.name}」，提升個案${b.topic}。`;
+  if(conc.length&&abst.length){ p1+=`個案在治療師示範與說明後，對具體詞彙「${conc.join('、')}」理解度高，能正確指認；對情緒／抽象詞彙「${abst.join('、')}」則需治療師多次示範與情境說明後，方能理解。`; }
+  else if(conc.length){ p1+=`個案在治療師示範與說明後，可理解「${conc.join('、')}」，整體詞彙理解表現良好。`; }
+  else { p1+=`個案對本次目標詞彙「${abst.join('、')}」均需治療師多次示範與情境說明後方能理解。`; }
+  p1+=`個案在治療師說明繪本故事段落後，可以理解繪本段落大意、回答繪本相關的Wh問題，包含${b.whOk}的問題，對於${b.whHard}有時需要提問引導，個案對於此類型問題較無法直接理解。`;
+  const p2=state.imitation==='delayed'
+    ?`在共讀期間，個案在治療師示範後，可以延宕仿說方式說出「${sent.pattern}」的${sent.desc}，個案需等待治療師示範語句後，經短暫停頓再依照句型套用至繪本不同情境上。`
+    :`在共讀期間，個案在治療師示範後，可立即仿說說出「${sent.pattern}」的${sent.desc}，並依照句型套用至繪本不同情境上。`;
+  const p3=state.scaffold==='many'
+    ?`在共讀完畢後，個案在治療師給予鷹架並口語提示「說說看，這裡面發生什麼事情了？」後，需在治療師提供較多口語提示下，方能簡單說出當頁${b.chars}發生的事情，自發性敘事能力仍需持續練習。`
+    :`在共讀完畢後，個案在治療師給予鷹架並口語提示「說說看，這裡面發生什麼事情了？」後，可在少量提示下說出當頁${b.chars}發生的事情，敘事表現良好。`;
+  document.getElementById('note').textContent=`進行語言治療：\n1. ${p1}\n2. ${p2}\n3. ${p3}`;
+}
+function render(){ renderTabs(); renderChips(); renderSentenceOpts(); generateNote(); }
+function copyNote(){
+  const text=document.getElementById('note').textContent;
+  const btn=document.getElementById('copy-btn');
+  const finish=()=>{ btn.textContent='✓ 已複製！'; btn.classList.add('done'); setTimeout(()=>{ btn.textContent='複製紀錄'; btn.classList.remove('done'); },2000); };
+  if(navigator.clipboard){ navigator.clipboard.writeText(text).then(finish).catch(()=>fallback(text,finish)); }
+  else { fallback(text,finish); }
+}
+function fallback(text,cb){
+  const ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0';
+  document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); cb();
+}
+
+// ============================================================
+// NORM TOOL DATA — 語言理解
+// ============================================================
+const COMP={
+  3:{
+     3:{pr:'≤1',tL:28,tN:21}, 4:{pr:1,tL:30,tN:27},  5:{pr:3,tL:31,tN:31},
+     6:{pr:5,tL:32,tN:34},   7:{pr:7,tL:34,tN:36},   8:{pr:11,tL:35,tN:38},
+     9:{pr:13,tL:37,tN:39}, 10:{pr:16,tL:38,tN:40},  11:{pr:18,tL:39,tN:41},
+    12:{pr:19,tL:41,tN:41}, 13:{pr:22,tL:42,tN:42},  14:{pr:25,tL:43,tN:43},
+    15:{pr:28,tL:45,tN:44}, 16:{pr:32,tL:46,tN:45},  17:{pr:36,tL:47,tN:47},
+    18:{pr:41,tL:49,tN:48}, 19:{pr:47,tL:50,tN:49},  20:{pr:53,tL:51,tN:51},
+    21:{pr:60,tL:53,tN:52}, 22:{pr:65,tL:54,tN:54},  23:{pr:69,tL:55,tN:55},
+    24:{pr:72,tL:57,tN:56}, 25:{pr:75,tL:58,tN:57},  26:{pr:80,tL:59,tN:58},
+    27:{pr:84,tL:61,tN:60}, 28:{pr:87,tL:62,tN:61},  29:{pr:91,tL:63,tN:63},
+    30:{pr:93,tL:65,tN:65}, 31:{pr:96,tL:66,tN:67},  32:{pr:97,tL:67,tN:69},
+    33:{pr:99,tL:69,tN:72}, 34:{pr:99,tL:70,tN:75},  35:{pr:'99+',tL:71,tN:79}
+  },
+  4:{
+     7:{pr:'≤1',tL:21,tN:21}, 8:{pr:1,tL:23,tN:27},   9:{pr:2,tL:24,tN:29},
+    10:{pr:2,tL:26,tN:30},  11:{pr:2,tL:27,tN:30},   12:{pr:3,tL:29,tN:31},
+    13:{pr:3,tL:30,tN:31},  14:{pr:4,tL:32,tN:33},   15:{pr:7,tL:33,tN:35},
+    16:{pr:9,tL:35,tN:37},  17:{pr:11,tL:36,tN:38},  18:{pr:13,tL:38,tN:39},
+    19:{pr:15,tL:39,tN:40}, 20:{pr:18,tL:41,tN:41},  21:{pr:21,tL:42,tN:42},
+    22:{pr:25,tL:44,tN:43}, 23:{pr:28,tL:45,tN:44},  24:{pr:33,tL:47,tN:46},
+    25:{pr:39,tL:48,tN:47}, 26:{pr:45,tL:50,tN:49},  27:{pr:52,tL:51,tN:51},
+    28:{pr:59,tL:53,tN:52}, 29:{pr:65,tL:54,tN:54},  30:{pr:67,tL:56,tN:55},
+    31:{pr:71,tL:57,tN:56}, 32:{pr:77,tL:59,tN:58},  33:{pr:83,tL:60,tN:59},
+    34:{pr:88,tL:62,tN:62}, 35:{pr:94,tL:63,tN:65},  36:{pr:98,tL:65,tN:70},
+    37:{pr:'99+',tL:66,tN:76}
+  },
+  5:{
+    13:{pr:'≤1',tL:13,tN:21}, 14:{pr:1,tL:15,tN:25}, 15:{pr:1,tL:18,tN:27},
+    16:{pr:1,tL:20,tN:27},   17:{pr:1,tL:22,tN:28},  18:{pr:2,tL:24,tN:30},
+    19:{pr:3,tL:26,tN:31},   20:{pr:4,tL:28,tN:32},  21:{pr:5,tL:30,tN:34},
+    22:{pr:6,tL:32,tN:34},   23:{pr:8,tL:34,tN:36},  24:{pr:11,tL:37,tN:38},
+    25:{pr:13,tL:39,tN:39},  26:{pr:17,tL:41,tN:40}, 27:{pr:20,tL:43,tN:42},
+    28:{pr:26,tL:45,tN:44},  29:{pr:33,tL:47,tN:46}, 30:{pr:40,tL:49,tN:48},
+    31:{pr:49,tL:51,tN:50},  32:{pr:57,tL:54,tN:52}, 33:{pr:66,tL:56,tN:54},
+    34:{pr:76,tL:58,tN:57},  35:{pr:84,tL:60,tN:60}, 36:{pr:93,tL:62,tN:64},
+    37:{pr:98,tL:64,tN:71}
+  }
+};
+
+// NORM DATA — 口語表達
+const EXPR={
+  3:{
+     1:{pr:'≤1',tL:25,tN:21},  2:{pr:1,tL:26,tN:26},   3:{pr:1,tL:27,tN:27},
+     4:{pr:1,tL:28,tN:28},     5:{pr:2,tL:29,tN:30},    6:{pr:3,tL:30,tN:31},
+     7:{pr:4,tL:31,tN:32},     8:{pr:4,tL:31,tN:32},    9:{pr:5,tL:32,tN:33},
+    10:{pr:6,tL:33,tN:34},    11:{pr:7,tL:34,tN:35},   12:{pr:9,tL:35,tN:36},
+    13:{pr:10,tL:36,tN:37},   14:{pr:12,tL:37,tN:38},  15:{pr:14,tL:38,tN:39},
+    16:{pr:15,tL:39,tN:40},   17:{pr:17,tL:40,tN:41},  18:{pr:20,tL:41,tN:42},
+    19:{pr:23,tL:42,tN:43},   20:{pr:26,tL:43,tN:43},  21:{pr:29,tL:44,tN:44},
+    22:{pr:32,tL:45,tN:45},   23:{pr:36,tL:46,tN:46},  24:{pr:38,tL:47,tN:47},
+    25:{pr:41,tL:48,tN:48},   26:{pr:44,tL:49,tN:48},  27:{pr:47,tL:50,tN:49},
+    28:{pr:50,tL:51,tN:50},   29:{pr:52,tL:52,tN:50},  30:{pr:55,tL:53,tN:51},
+    31:{pr:58,tL:54,tN:52},   32:{pr:61,tL:55,tN:53},  33:{pr:65,tL:55,tN:54},
+    34:{pr:69,tL:56,tN:55},   35:{pr:73,tL:57,tN:56},  36:{pr:76,tL:58,tN:57},
+    37:{pr:79,tL:59,tN:58},   38:{pr:81,tL:60,tN:59},  39:{pr:85,tL:61,tN:60},
+    40:{pr:88,tL:62,tN:62},   41:{pr:92,tL:63,tN:64},  42:{pr:95,tL:64,tN:67},
+    43:{pr:97,tL:65,tN:69},   44:{pr:98,tL:66,tN:70},  45:{pr:99,tL:67,tN:74}
+  },
+  4:{
+     7:{pr:'≤1',tL:11,tN:24},  8:{pr:1,tL:12,tN:24},   9:{pr:1,tL:14,tN:25},
+    10:{pr:1,tL:15,tN:26},    11:{pr:1,tL:16,tN:27},   12:{pr:1,tL:18,tN:27},
+    13:{pr:1,tL:19,tN:28},    14:{pr:1,tL:20,tN:28},   15:{pr:2,tL:22,tN:29},
+    16:{pr:2,tL:23,tN:29},    17:{pr:2,tL:24,tN:30},   18:{pr:2,tL:25,tN:30},
+    19:{pr:3,tL:27,tN:31},    20:{pr:4,tL:28,tN:32},   21:{pr:4,tL:29,tN:32},
+    22:{pr:5,tL:31,tN:33},    23:{pr:5,tL:32,tN:34},   24:{pr:6,tL:33,tN:35},
+    25:{pr:7,tL:35,tN:36},    26:{pr:10,tL:36,tN:37},  27:{pr:12,tL:37,tN:38},
+    28:{pr:13,tL:39,tN:39},   29:{pr:15,tL:40,tN:40},  30:{pr:18,tL:41,tN:41},
+    31:{pr:21,tL:42,tN:42},   32:{pr:24,tL:44,tN:43},  33:{pr:27,tL:45,tN:44},
+    34:{pr:29,tL:46,tN:45},   35:{pr:33,tL:48,tN:45},  36:{pr:37,tL:49,tN:47},
+    37:{pr:42,tL:50,tN:48},   38:{pr:49,tL:52,tN:50},  39:{pr:54,tL:53,tN:51},
+    40:{pr:59,tL:54,tN:52},   41:{pr:65,tL:56,tN:54},  42:{pr:72,tL:57,tN:56},
+    43:{pr:78,tL:58,tN:58},   44:{pr:83,tL:60,tN:59},  45:{pr:89,tL:61,tN:62},
+    46:{pr:96,tL:62,tN:68}
+  },
+  5:{
+    21:{pr:'≤1',tL:16,tN:21}, 22:{pr:1,tL:18,tN:25},  23:{pr:1,tL:20,tN:26},
+    24:{pr:1,tL:22,tN:28},   25:{pr:2,tL:24,tN:30},   26:{pr:3,tL:26,tN:31},
+    27:{pr:4,tL:28,tN:32},   28:{pr:5,tL:29,tN:34},   29:{pr:6,tL:31,tN:34},
+    30:{pr:8,tL:33,tN:36},   31:{pr:10,tL:35,tN:37},  32:{pr:12,tL:37,tN:38},
+    33:{pr:13,tL:39,tN:39},  34:{pr:16,tL:40,tN:40},  35:{pr:19,tL:42,tN:41},
+    36:{pr:23,tL:44,tN:43},  37:{pr:28,tL:46,tN:44},  38:{pr:34,tL:48,tN:46},
+    39:{pr:40,tL:50,tN:47},  40:{pr:47,tL:51,tN:49},  41:{pr:56,tL:53,tN:52},
+    42:{pr:63,tL:55,tN:53},  43:{pr:71,tL:57,tN:56},  44:{pr:80,tL:59,tN:59},
+    45:{pr:88,tL:61,tN:62},  46:{pr:95,tL:62,tN:67}
+  }
+};
+
+// ============================================================
+// NORM TOOL LOGIC
+// ============================================================
+const NST={c:{age:4,raw:null},e:{age:4,raw:null}};
+
+function nSelAge(t,a){
+  NST[t].age=a;
+  document.querySelectorAll(`#nag-${t} .n-age-btn`).forEach((b,i)=>{
+    b.classList.toggle('active',[3,4,5][i]===a);
+  });
+  nLookup(t);
+}
+
+function nInterp(pr){
+  const n=pr==='≤1'?1:pr==='99+'?99:parseInt(pr);
+  if(n<5)  return{text:'發展遲緩，能力明顯落後同儕',level:'發展遲緩',bc:'n-bd'};
+  if(n<10) return{text:'發展遲緩，能力落後同儕',    level:'發展遲緩',bc:'n-bd'};
+  if(n<=20)return{text:'邊緣型發展，能力稍落後同儕', level:'邊緣型發展',bc:'n-bw'};
+  if(n<=45)return{text:'正常發展，但能力與同儕相比為中下程度',level:'正常（中下）',bc:'n-bn'};
+  return    {text:'正常發展，能力與同儕相當',         level:'正常發展',bc:'n-bg'};
+}
+
+function nLookup(t){
+  const raw=parseInt(document.getElementById(`nraw-${t}`).value);
+  NST[t].raw=isNaN(raw)?null:raw;
+  const div=document.getElementById(`nres-${t}`);
+  if(isNaN(raw)){div.innerHTML='<div class="n-empty">請輸入原始分數</div>';return;}
+  const tbl=t==='c'?COMP:EXPR;
+  const d=tbl[NST[t].age]&&tbl[NST[t].age][raw];
+  if(!d){div.innerHTML=`<div class="n-empty">原始分數 ${raw} 不在 ${NST[t].age} 歲組常模範圍內</div>`;return;}
+  const i=nInterp(d.pr);
+  div.innerHTML=`
+    <div class="n-result">
+      <div class="n-rrow"><span class="n-rl">百分等級（PR）</span><span class="n-rv n-blue">${d.pr}</span></div>
+      <div class="n-rrow"><span class="n-rl">直線轉換 T</span><span class="n-rv n-purple">${d.tL}</span></div>
+      <div class="n-rrow"><span class="n-rl">常態化轉換 T</span><span class="n-rv n-green">${d.tN}</span></div>
+      <div class="n-ibar"><span class="n-badge ${i.bc}">${i.level}</span><span class="n-itext">${i.text}</span></div>
+    </div>`;
+}
+
+function nBuildReport(t){
+  const{age,raw}=NST[t]; if(raw===null) return '';
+  const tbl=t==='c'?COMP:EXPR; const d=tbl[age]&&tbl[age][raw];
+  if(!d) return '';
+  const i=nInterp(d.pr);
+  const name=t==='c'?'語言理解':'口語表達';
+  return `使用學前兒童語言障礙評量表評量個案${name}能力，個案原始分數為${raw}，對照${age}歲組常模後，其百分等級${d.pr}，T分數${d.tL}，顯示其${name}為${i.level}，${i.text}。`;
+}
+
+function nGenAll(){
+  document.getElementById('nrep-c').value=nBuildReport('c')||'（尚未輸入語言理解資料，或分數超出常模範圍）';
+  document.getElementById('nrep-e').value=nBuildReport('e')||'（尚未輸入口語表達資料，或分數超出常模範圍）';
+}
+
+function nCopyAll(){
+  const t1=document.getElementById('nrep-c').value;
+  const t2=document.getElementById('nrep-e').value;
+  const lines=[t1,t2].filter(t=>t&&!t.startsWith('（'));
+  if(!lines.length){showToast('尚無可複製的內容');return;}
+  navigator.clipboard.writeText(lines.join('\n\n')).then(()=>showToast('已複製到剪貼簿 ✓'));
+}
+
+function nClearAll(){
+  ['nrep-c','nrep-e'].forEach(id=>document.getElementById(id).value='');
+  ['c','e'].forEach(t=>{
+    NST[t].raw=null;
+    document.getElementById(`nraw-${t}`).value='';
+    document.getElementById(`nres-${t}`).innerHTML='<div class="n-empty">請輸入原始分數</div>';
+  });
+}
+
+function showToast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),2300);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+initBook('aini');
+render();
+</script>
+</body>
+</html>
